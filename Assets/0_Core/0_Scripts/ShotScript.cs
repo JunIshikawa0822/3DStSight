@@ -11,6 +11,9 @@ public class ShotScript : MonoBehaviour
     [SerializeField]
     GameObject MouseObject;
 
+    float SensitivityY = 500;
+    float SensitivityX = 1000;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -24,13 +27,13 @@ public class ShotScript : MonoBehaviour
     {
         Vector3 mousePos = Input.mousePosition;
         //スクリーン座標のZ値を5に変更
-        Vector3 screenPos = new Vector3(mousePos.x, mousePos.y, 1.2f);
+        Vector3 screenPos = new Vector3((mousePos.x - Screen.width / 2) / SensitivityX, 0f, (mousePos.y - Screen.width / 2) / SensitivityY);
         //ワールド座標に変換
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
-        Debug.Log(worldPos);
+        //Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
+        Debug.Log(screenPos);
 
         //ワールド座標を3Dオブジェクトの座標に適用
-        MouseObject.transform.localPosition = worldPos;
+        MouseObject.transform.localPosition =  Player.transform.position + screenPos;
 
         //Vector3 playerVector = new Vector3(Player.transform.position.x, Player.transform.position.y, Player.transform.position.z);
         //Vector3 mouseVector = worldPos;
