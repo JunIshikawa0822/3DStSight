@@ -5,11 +5,11 @@ using UnityEngine.UIElements;
 
 public class ShotScript : MonoBehaviour
 {
-    LineRenderer LineRenderer;
-    GameObject Player;
+    LineRenderer lineRenderer;
+    GameObject player;
 
     [SerializeField]
-    GameObject MouseObject;
+    GameObject mouseObject;
 
     Camera mainCamera;
 
@@ -18,8 +18,9 @@ public class ShotScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {    
-        LineRenderer = gameObject.GetComponent<LineRenderer>();
-        Player = GameObject.Find("Player");
+        lineRenderer = gameObject.GetComponent<LineRenderer>();
+        Debug.Log(lineRenderer);
+        player = GameObject.Find("Player");
         mainCamera = Camera.main;
     }
 
@@ -38,16 +39,23 @@ public class ShotScript : MonoBehaviour
 
                 currentPosition = mainCamera.ScreenToWorldPoint(mousePosition);
                 currentPosition.y = 0.15f;
-                MouseObject.transform.position = currentPosition;
+                mouseObject.transform.position = currentPosition;
             }
         }
 
-        LineRenderer.SetPositions(
+        lineRenderer.SetPositions(
             new Vector3[]
             {
-                Player.transform.position,
-                currentPosition
+                new Vector3(0, 0.5f, 0),
+                new Vector3(10, 0.5f, 0 )
+                //player.transform.position,
+                //currentPosition
             }
         );
+
+        lineRenderer.startWidth = 0.1f;
+        lineRenderer.endWidth = 0.1f;
+        lineRenderer.startColor = Color.red; // 開始点の色
+        lineRenderer.endColor = Color.red; // 終了点の色
     }
 }
