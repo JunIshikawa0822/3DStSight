@@ -11,39 +11,43 @@ public class ShotScript : MonoBehaviour
     [SerializeField]
     GameObject MouseObject;
 
-    float SensitivityY = 500;
-    float SensitivityX = 1000;
+    Camera mainCamera;
+
+    private Vector3 currentPosition = Vector3.zero;
 
     // Start is called before the first frame update
     void Start()
-    {
-        // LineRendererコンポーネントをゲームオブジェクトにアタッチする
+    {    
         LineRenderer = gameObject.GetComponent<LineRenderer>();
         Player = GameObject.Find("Player");
+        mainCamera = Camera.main;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 mousePos = Input.mousePosition;
-        //スクリーン座標のZ値を5に変更
-        Vector3 screenPos = new Vector3((mousePos.x - Screen.width / 2) / SensitivityX, 0f, (mousePos.y - Screen.width / 2) / SensitivityY);
-        //ワールド座標に変換
-        //Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
-        Debug.Log(screenPos);
+        
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (hit.collider.CompareTag("floor"))
+            {
+                float distance = Vector3.Distance(mainCamera.transform.position, hit.point);
+                Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance);
 
-        //ワールド座標を3Dオブジェクトの座標に適用
-        MouseObject.transform.localPosition =  Player.transform.position + screenPos;
+                currentPosition = mainCamera.ScreenToWorldPoint(mousePosition);
+                currentPosition.y = 0.15f;
+                MouseObject.transform.position = currentPosition;
+            }
+        }
 
-        //Vector3 playerVector = new Vector3(Player.transform.position.x, Player.transform.position.y, Player.transform.position.z);
-        //Vector3 mouseVector = worldPos;
-
-        //LineRenderer.SetPositions(
-        //    new Vector3[]
-        //    {
-        //        playerVector,
-        //        mouseVector
-        //    }
-        //);
+        LineRenderer.SetPositions(
+            new Vector3[]
+            {
+                Player.transform.position,
+                currentPosition
+            }
+        );
     }
 }
