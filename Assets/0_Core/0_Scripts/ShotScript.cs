@@ -22,7 +22,8 @@ public class ShotScript : MonoBehaviour
     RaycastHit shotHit;
 
     float shotDistance = 100f;
-    float shotHeight = 0.2f;
+
+    int mouseLayerMask = 1 << 6;
 
     // Start is called before the first frame update
     void Start()
@@ -32,12 +33,13 @@ public class ShotScript : MonoBehaviour
         player = GameObject.Find("Player");
         mainCamera = Camera.main;
         fireIntervalWait = new WaitForSeconds(fireInterval);
-        UnityEngine.Cursor.visible = false;
+        //UnityEngine.Cursor.visible = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        //UnityEngine.Cursor.visible = false;
         MousePositionInit();
 
         if (Input.GetMouseButton(0))
@@ -67,16 +69,16 @@ public class ShotScript : MonoBehaviour
     {
         Ray mouseRay = mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit mouseHit;
-        int mouseLayerMask = 1 << 6;
+        
         if (Physics.Raycast(mouseRay, out mouseHit, Mathf.Infinity, mouseLayerMask))
         {
-            
-            float distance = Vector3.Distance(mainCamera.transform.position, mouseHit.point);
-            Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance);
+            //float distance = Vector3.Distance(mainCamera.transform.position, mouseHit.point);
+            //Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance);
 
-            currentPosition = mainCamera.ScreenToWorldPoint(mousePosition);   
-            currentPosition.y = 0.2f;
-            mouseObject.transform.position = currentPosition;          
+            //currentPosition = mainCamera.ScreenToWorldPoint(mousePosition);   
+            currentPosition = mouseHit.point;
+            mouseObject.transform.position = currentPosition;
+            Debug.Log(mouseHit.collider.gameObject.name);
         }
     }
 
@@ -87,12 +89,18 @@ public class ShotScript : MonoBehaviour
             return;
         }
 
-        Vector3 shotOrigin = new Vector3(player.transform.position.x, shotHeight, player.transform.position.z);
-        Vector3 shotDirection = new Vector3(currentPosition.x, shotHeight, currentPosition.z) - player.transform.position;
+        Vector3 shotOrigin = new Vector3(player.transform.position.x, mouseObject.transform.position.y, player.transform.position.z);
+        Vector3 shotDirection = currentPosition - shotOrigin;
         if (Physics.Raycast(shotOrigin, shotDirection, out shotHit, shotDistance))
         {
             BulletHit();
-            Debug.DrawRay(shotOrigin, shotDirection, Color.red, 5, false);
+            Debug.DrawRay(shotOrigin, shotDirection, Color.red, 5, true);
+            Debug.Log("HIT!!!!!!");
+        }
+        else
+        {
+            Debug.DrawRay(shotOrigin, shotDirection, Color.red, 5, true);
+            Debug.Log("NotHit");
         }
 
         StartCoroutine(nameof(FireTimer));

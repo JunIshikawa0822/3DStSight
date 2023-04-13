@@ -20,7 +20,7 @@ public class PlayerMoveScript : MonoBehaviour
     void Start()
     {
         Player = GameObject.Find("Player");
-        _playerVelocity = 0.005f;
+        _playerVelocity = 0.035f;
         inputDirection = new Vector3(1, 0, 0);
         playerAnimator = Player.GetComponent<Animator>();
     }
