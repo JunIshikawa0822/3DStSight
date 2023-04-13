@@ -7,7 +7,7 @@ public class test : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        var lineRenderer = gameObject.AddComponent<LineRenderer>();
+        var lineRenderer = GetComponent<LineRenderer>();
 
         var positions = new Vector3[]{
         new Vector3(-8, 0, 0),               // 開始点
