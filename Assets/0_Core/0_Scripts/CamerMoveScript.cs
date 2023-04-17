@@ -17,6 +17,6 @@ public class CamerMoveScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MainCamera.gameObject.transform.position = Player.transform.position + new Vector3(0, 0.4f, -2f);
+        MainCamera.gameObject.transform.position = Player.transform.position + new Vector3(0, 0.6f, -2f);
     }
 }
