@@ -7,6 +7,8 @@ public class CamerMoveScript : MonoBehaviour
 {
     // Start is called before the first frame update
     GameObject Player;
+
+    [SerializeField]
     GameObject MouseObject;
     Camera MainCamera;
     // Start is called before the first frame update
@@ -21,10 +23,26 @@ public class CamerMoveScript : MonoBehaviour
     {
         MainCamera.gameObject.transform.position = Player.transform.position + new Vector3(0, 0.6f, -2f);
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButton(1))
         {
-            Vector3 CameraMove = new Vector3(MouseObject.transform.position.x, 0.6f, MouseObject.transform.position.z) * 0.6f;
-            transform.DOLocalMove((CameraMove), 1f).SetRelative(true);
+            CameraOnZoomEasing();
         }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            CameraOffZoomEasing();
+        }
+    }
+
+    void CameraOnZoomEasing()
+    {
+        Vector3 CameraMove = MainCamera.transform.position + (MouseObject.transform.position - Player.transform.position);
+        MainCamera.transform.DOMove(CameraMove, 1f).SetEase(Ease.OutQuad);
+    }
+
+    void CameraOffZoomEasing()
+    {
+        Vector3 CameraMove = Player.transform.position + new Vector3(0, 0.6f, -2f);
+        MainCamera.transform.DOMove(CameraMove, 1f).SetEase(Ease.OutQuad);
     }
 }

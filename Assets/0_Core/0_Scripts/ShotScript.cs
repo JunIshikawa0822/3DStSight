@@ -54,9 +54,9 @@ public class ShotScript : MonoBehaviour
         //mouseObject.transform.localScale =  Vector3.one * (GetDistance(mouseObject.transform.position) / baseDistance) * 0.08f;
         
         Debug.Log(mouseObject.transform.localScale);
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(1))
         {
-            if (Input.GetMouseButton(1))
+            if (Input.GetMouseButton(0))
             {
                 Fire();
             }
@@ -93,7 +93,7 @@ public class ShotScript : MonoBehaviour
             //Rayを飛ばしてマウスの位置を3D空間に変換
             currentPosition = mouseHit.point;
             mouseObject.transform.position = currentPosition;
-            Debug.Log(mouseHit.collider.gameObject.name);
+            //Debug.Log(mouseHit.collider.gameObject.name);
         }
     }
 
@@ -113,13 +113,13 @@ public class ShotScript : MonoBehaviour
             //Rayがオブジェクトに当たった場合
             BulletHit();
             Debug.DrawRay(shotOrigin, shotDirection, Color.red, 5, true);
-            Debug.Log("HIT!!!!!!");
+            //Debug.Log("HIT!!!!!!");
         }
         else
         {
             //当たらなかった場合
             Debug.DrawRay(shotOrigin, shotDirection, Color.red, 5, true);
-            Debug.Log("NotHit");
+            //Debug.Log("NotHit");
         }
 
         StartCoroutine(nameof(FireTimer));
@@ -128,7 +128,7 @@ public class ShotScript : MonoBehaviour
     //当たった場合に呼び出す関数
     void BulletHit()
     {
-        Debug.Log(shotHit.collider.gameObject.name);
+        //Debug.Log(shotHit.collider.gameObject.name);
     }
 
     //mouseObjectの大きさを変化させて見た目の大きさを統一するために、カメラからの距離を算出する関数（今はいらない）
