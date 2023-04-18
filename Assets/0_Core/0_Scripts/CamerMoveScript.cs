@@ -11,6 +11,9 @@ public class CamerMoveScript : MonoBehaviour
     [SerializeField]
     GameObject MouseObject;
     Camera MainCamera;
+
+    bool isShotZoom = true;
+    Tween tween;
     // Start is called before the first frame update
     void Start()
     {
@@ -21,28 +24,37 @@ public class CamerMoveScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MainCamera.gameObject.transform.position = Player.transform.position + new Vector3(0, 0.6f, -2f);
+        if (isShotZoom)
+        {
+            MainCamera.gameObject.transform.position = Player.transform.position + new Vector3(0, 0.6f, -2f);
+        }
+        else
+        {
+            MainCamera.gameObject.transform.position =
+                Player.transform.position + new Vector3(0, 0.6f, -2f) +
+                (MouseObject.transform.position - Player.transform.position)/2;
+        }
 
         if (Input.GetMouseButton(1))
         {
-            CameraOnZoomEasing();
+            isShotZoom = false;        
         }
 
         if (Input.GetMouseButtonUp(1))
         {
-            CameraOffZoomEasing();
+            isShotZoom = true;
         }
     }
 
     void CameraOnZoomEasing()
     {
         Vector3 CameraMove = MainCamera.transform.position + (MouseObject.transform.position - Player.transform.position);
-        MainCamera.transform.DOMove(CameraMove, 1f).SetEase(Ease.OutQuad);
+        tween = MainCamera.transform.DOMove(CameraMove/2, 1f).SetEase(Ease.OutQuad);
     }
 
     void CameraOffZoomEasing()
     {
         Vector3 CameraMove = Player.transform.position + new Vector3(0, 0.6f, -2f);
-        MainCamera.transform.DOMove(CameraMove, 1f).SetEase(Ease.OutQuad);
+        tween = MainCamera.transform.DOMove(CameraMove, 1f).SetEase(Ease.OutQuad);
     }
 }

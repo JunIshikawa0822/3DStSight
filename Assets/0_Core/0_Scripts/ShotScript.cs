@@ -26,23 +26,16 @@ public class ShotScript : MonoBehaviour
 
     int mouseLayerMask = 1 << 6;
 
-    //float baseDistance;
-
     [SerializeField]
     UnityEngine.UI.Image pointerImage;
 
     // Start is called before the first frame update
     void Start()
-    {    
-        //lineRenderer = gameObject.GetComponent<LineRenderer>();
-        //Debug.Log(lineRenderer);
+    {   
         player = GameObject.Find("Player");
         mainCamera = Camera.main;
         fireIntervalWait = new WaitForSeconds(fireInterval);
         UnityEngine.Cursor.visible = false;
-
-        //mouseObject.transform.position = new Vector3(0.5f, 0.376f, -8.353f);
-        //baseDistance = GetDistance(new Vector3(0.5f, 0.376f, -8.353f));
     }
 
     // Update is called once per frame
@@ -51,9 +44,6 @@ public class ShotScript : MonoBehaviour
         //UnityEngine.Cursor.visible = false;
         MousePositionInit();
         
-        //mouseObject.transform.localScale =  Vector3.one * (GetDistance(mouseObject.transform.position) / baseDistance) * 0.08f;
-        
-        Debug.Log(mouseObject.transform.localScale);
         if (Input.GetMouseButton(1))
         {
             if (Input.GetMouseButton(0))
@@ -61,20 +51,6 @@ public class ShotScript : MonoBehaviour
                 Fire();
             }
         }
-        //lineRenderer.SetPositions(
-        //    new Vector3[]
-        //    {
-        //        new Vector3(0, 0.5f, 1),
-        //        new Vector3(10, 0.5f, 1 )
-        //        //player.transform.position,
-        //        //currentPosition
-        //    }
-        //);
-
-        //lineRenderer.startWidth = 0.1f;
-        //lineRenderer.endWidth = 0.1f;
-        //lineRenderer.startColor = Color.red; // 開始点の色
-        //lineRenderer.endColor = Color.red; // 終了点の色
     }
 
     void MousePositionInit()
@@ -85,15 +61,10 @@ public class ShotScript : MonoBehaviour
         
         if (Physics.Raycast(mouseRay, out mouseHit, Mathf.Infinity, mouseLayerMask))
         {
-            //float distance = Vector3.Distance(mainCamera.transform.position, mouseHit.point);
-            //Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance);
-
-            //currentPosition = mainCamera.ScreenToWorldPoint(mousePosition);
-
             //Rayを飛ばしてマウスの位置を3D空間に変換
             currentPosition = mouseHit.point;
             mouseObject.transform.position = currentPosition;
-            //Debug.Log(mouseHit.collider.gameObject.name);
+            Debug.DrawRay(mouseRay.origin, mouseHit.point - mouseRay.origin, Color.green, 5, false);
         }
     }
 
