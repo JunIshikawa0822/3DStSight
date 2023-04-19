@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
+using static UnityEditor.PlayerSettings;
 
 public class ShotScript : MonoBehaviour
 {
@@ -64,7 +65,9 @@ public class ShotScript : MonoBehaviour
             //Rayを飛ばしてマウスの位置を3D空間に変換
             currentPosition = mouseHit.point;
             mouseObject.transform.position = currentPosition;
-            Debug.DrawRay(mouseRay.origin, mouseHit.point - mouseRay.origin, Color.green, 5, false);
+            //Vector3 mouseObjPos = player.transform.position + Vector3.ClampMagnitude(mouseHit.point - player.transform.position, 7);
+            //mouseObject.transform.position = new Vector3(mouseObjPos.x, mouseHit.point.y, mouseObjPos.z);
+            //Debug.DrawRay(mouseRay.origin, mouseHit.point - mouseRay.origin, Color.green, 5, false);
         }
     }
 
