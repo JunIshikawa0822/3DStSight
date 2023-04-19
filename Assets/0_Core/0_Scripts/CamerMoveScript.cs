@@ -25,34 +25,7 @@ public class CamerMoveScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isShotZoom)
-        {
-            MainCamera.gameObject.transform.position = Player.transform.position + new Vector3(0, 0.6f, -2f);
-        }
-        else
-        {
-            
-            Vector3 cameraPos =
-            Player.transform.position + new Vector3(0, 0.6f, -2f) +
-            (MouseObject.transform.position - Player.transform.position) / 2;
-
-            cameraPos.x = Mathf.Clamp(cameraPos.x, Player.transform.position.x - 1.2f, Player.transform.position.x + 1.2f);
-            cameraPos.z = Mathf.Clamp(cameraPos.z, Player.transform.position.z - 3.0f, Player.transform.position.z - 0.8f);
-            cameraPos.y = Player.transform.position.y + 0.6f;
-            MainCamera.transform.position = cameraPos;
-            
-            
-        }
-
-        if (Input.GetMouseButton(1))
-        {
-            isShotZoom = false;        
-        }
-
-        if (Input.GetMouseButtonUp(1))
-        {
-            isShotZoom = true;
-        }
+        
     }
 
     void CameraOnZoomEasing()
