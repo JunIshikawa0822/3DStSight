@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using static UnityEditor.PlayerSettings;
+using Cinemachine;
 
 public class CamerMoveScript : MonoBehaviour
 {
@@ -10,33 +11,61 @@ public class CamerMoveScript : MonoBehaviour
     GameObject Player;
 
     [SerializeField]
-    GameObject MouseObject;
-    Camera MainCamera;
+    List<CinemachineVirtualCamera> CameraList = new List<CinemachineVirtualCamera>();
 
-    bool isShotZoom = true;
-    Tween tween;
+    [SerializeField]
+    GameObject MouseObject;
+    //Camera MainCamera;
+
     // Start is called before the first frame update
     void Start()
     {
         Player = GameObject.Find("Player");
-        MainCamera = Camera.main;
+        //MainCamera = Camera.main;
+        PrioritySet(0);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetMouseButton(1))
+        {
+            ShotCamera();
+        }
+        else
+        {
+            LeftOrRightCamera();
+        }
     }
 
-    void CameraOnZoomEasing()
+    void LeftOrRightCamera()
     {
-        Vector3 CameraMove = MainCamera.transform.position + (MouseObject.transform.position - Player.transform.position);
-        tween = MainCamera.transform.DOMove(CameraMove/2, 1f).SetEase(Ease.OutQuad);
+        if (MouseObject.transform.position.x >= Player.transform.position.x)
+        {
+            PrioritySet(0);
+        }
+        else
+        {
+            PrioritySet(1);
+        }
     }
 
-    void CameraOffZoomEasing()
+    void ShotCamera()
     {
-        Vector3 CameraMove = Player.transform.position + new Vector3(0, 0.6f, -2f);
-        tween = MainCamera.transform.DOMove(CameraMove, 1f).SetEase(Ease.OutQuad);
+        PrioritySet(2);
+    }
+
+    private void PrioritySet(int number)
+    {
+        for (int i = 0; i < CameraList.Count; i++)
+        {
+            if (i == number)
+            {
+                CameraList[i].Priority = 10;
+                continue;
+            }
+
+            CameraList[i].Priority = 5;
+        }
     }
 }
