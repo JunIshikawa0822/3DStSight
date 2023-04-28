@@ -41,4 +41,12 @@ public class PlayerMoveScript : MonoBehaviour
         playerAnimator.SetFloat("Player.y", inputDirection.z);
 
     }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.tag == "Enemy")
+        {
+            Debug.Log("視界の範囲内");
+        }
+    }
 }

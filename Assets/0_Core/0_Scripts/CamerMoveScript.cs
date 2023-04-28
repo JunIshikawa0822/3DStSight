@@ -15,13 +15,11 @@ public class CamerMoveScript : MonoBehaviour
 
     [SerializeField]
     GameObject MouseObject;
-    //Camera MainCamera;
 
     // Start is called before the first frame update
     void Start()
     {
         Player = GameObject.Find("Player");
-        //MainCamera = Camera.main;
         PrioritySet(0);
     }
 
@@ -53,6 +51,11 @@ public class CamerMoveScript : MonoBehaviour
     void ShotCamera()
     {
         PrioritySet(2);
+    }
+
+    void PlayerSightCameraMove()
+    {
+        transform.eulerAngles = new Vector3((MouseObject.transform.position - Player.transform.position).x, 0, 0);
     }
 
     private void PrioritySet(int number)
