@@ -7,13 +7,14 @@ using static UnityEditor.PlayerSettings;
 
 public class ShotScript : MonoBehaviour
 {
-    LineRenderer lineRenderer;
-    GameObject player;
+    //LineRenderer lineRenderer;
+    GameObject Player = ObjectManageScript.instance.Player;
 
-    [SerializeField]
-    GameObject mouseObject;
+    GameObject MouseObject = ObjectManageScript.instance.MouseObject;
 
-    Camera mainCamera;
+    Camera MainCamera = ObjectManageScript.instance.MainCamera;
+
+    UnityEngine.UI.Image pointerImage = ObjectManageScript.instance.PointerImage;
 
     private Vector3 currentPosition = Vector3.zero;
 
@@ -27,14 +28,9 @@ public class ShotScript : MonoBehaviour
 
     int mouseLayerMask = 1 << 6;
 
-    [SerializeField]
-    UnityEngine.UI.Image pointerImage;
-
     // Start is called before the first frame update
     void Start()
-    {   
-        player = GameObject.Find("Player");
-        mainCamera = Camera.main;
+    {
         fireIntervalWait = new WaitForSeconds(fireInterval);
         UnityEngine.Cursor.visible = false;
     }
@@ -57,14 +53,14 @@ public class ShotScript : MonoBehaviour
     void MousePositionInit()
     {
         pointerImage.transform.position = Input.mousePosition;
-        Ray mouseRay = mainCamera.ScreenPointToRay(Input.mousePosition);
+        Ray mouseRay = MainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit mouseHit;
         
         if (Physics.Raycast(mouseRay, out mouseHit, Mathf.Infinity, mouseLayerMask))
         {
             //Rayを飛ばしてマウスの位置を3D空間に変換
             currentPosition = mouseHit.point;
-            mouseObject.transform.position = currentPosition;
+            MouseObject.transform.position = currentPosition;
             //Vector3 mouseObjPos = player.transform.position + Vector3.ClampMagnitude(mouseHit.point - player.transform.position, 7);
             //mouseObject.transform.position = new Vector3(mouseObjPos.x, mouseHit.point.y, mouseObjPos.z);
             //Debug.DrawRay(mouseRay.origin, mouseHit.point - mouseRay.origin, Color.green, 5, false);
@@ -80,7 +76,7 @@ public class ShotScript : MonoBehaviour
         }
 
         //Playerの位置から、マウスの指定した場所までRayを飛ばす
-        Vector3 shotOrigin = new Vector3(player.transform.position.x, mouseObject.transform.position.y, player.transform.position.z);
+        Vector3 shotOrigin = new Vector3(Player.transform.position.x, MouseObject.transform.position.y, Player.transform.position.z);
         Vector3 shotDirection = currentPosition - shotOrigin;
         if (Physics.Raycast(shotOrigin, shotDirection, out shotHit, shotDistance))
         {
@@ -104,12 +100,6 @@ public class ShotScript : MonoBehaviour
     {
         //Debug.Log(shotHit.collider.gameObject.name);
     }
-
-    //mouseObjectの大きさを変化させて見た目の大きさを統一するために、カメラからの距離を算出する関数（今はいらない）
-    //float GetDistance(Vector3 objecttransform)
-    //{
-    //    return (objecttransform - Camera.main.transform.position).magnitude;
-    //}
 
     //非同期処理　弾の発射される時間感覚を制御
     IEnumerator FireTimer()

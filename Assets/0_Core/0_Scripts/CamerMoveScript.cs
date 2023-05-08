@@ -8,18 +8,15 @@ using Cinemachine;
 public class CamerMoveScript : MonoBehaviour
 {
     // Start is called before the first frame update
-    GameObject Player;
+    GameObject Player = ObjectManageScript.instance.Player;
 
-    [SerializeField]
-    List<CinemachineVirtualCamera> CameraList = new List<CinemachineVirtualCamera>();
+    List<CinemachineVirtualCamera> CameraList = ObjectManageScript.instance.CameraList;
 
-    [SerializeField]
-    GameObject MouseObject;
+    GameObject MouseObject = ObjectManageScript.instance.MouseObject;
 
     // Start is called before the first frame update
     void Start()
     {
-        Player = GameObject.Find("Player");
         PrioritySet(0);
     }
 
@@ -51,11 +48,6 @@ public class CamerMoveScript : MonoBehaviour
     void ShotCamera()
     {
         PrioritySet(2);
-    }
-
-    void PlayerSightCameraMove()
-    {
-        transform.eulerAngles = new Vector3((MouseObject.transform.position - Player.transform.position).x, 0, 0);
     }
 
     private void PrioritySet(int number)

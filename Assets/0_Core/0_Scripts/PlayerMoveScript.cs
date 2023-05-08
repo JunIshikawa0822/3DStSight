@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMoveScript : MonoBehaviour
-{
-    //[SerializeField]
+{ 
     GameObject Player;
-
-    // 初速度
-    private float _playerInitialVelocity;
 
     // 現在速度
     private float _playerVelocity;
@@ -19,7 +15,8 @@ public class PlayerMoveScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Player = GameObject.Find("Player");
+        Player = ObjectManageScript.instance.Player;
+
         _playerVelocity = 0.035f;
         inputDirection = new Vector3(1, 0, 0);
         playerAnimator = Player.GetComponent<Animator>();
@@ -40,13 +37,5 @@ public class PlayerMoveScript : MonoBehaviour
         playerAnimator.SetFloat("Player.x", inputDirection.x);
         playerAnimator.SetFloat("Player.y", inputDirection.z);
 
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.tag == "Enemy")
-        {
-            Debug.Log("視界の範囲内");
-        }
     }
 }
