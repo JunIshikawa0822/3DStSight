@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerMoveScript : MonoBehaviour
 { 
-    GameObject Player;
+    //GameObject Player;
 
     // 現在速度
     private float _playerVelocity;
@@ -15,11 +15,11 @@ public class PlayerMoveScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Player = ObjectManageScript.instance.Player;
+        //Player = ObjectManageScript.instance.Player;
 
         _playerVelocity = 0.035f;
         inputDirection = new Vector3(1, 0, 0);
-        playerAnimator = Player.GetComponent<Animator>();
+        playerAnimator = ObjectManageScript.instance.Player.GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -32,7 +32,7 @@ public class PlayerMoveScript : MonoBehaviour
     {
         inputDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
-        Player.transform.position += inputDirection * _playerVelocity;
+        ObjectManageScript.instance.Player.transform.position += inputDirection * _playerVelocity;
 
         playerAnimator.SetFloat("Player.x", inputDirection.x);
         playerAnimator.SetFloat("Player.y", inputDirection.z);

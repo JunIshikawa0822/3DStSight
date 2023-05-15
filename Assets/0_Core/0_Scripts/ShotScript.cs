@@ -8,13 +8,10 @@ using static UnityEditor.PlayerSettings;
 public class ShotScript : MonoBehaviour
 {
     //LineRenderer lineRenderer;
-    GameObject Player = ObjectManageScript.instance.Player;
-
-    GameObject MouseObject = ObjectManageScript.instance.MouseObject;
-
-    Camera MainCamera = ObjectManageScript.instance.MainCamera;
-
-    UnityEngine.UI.Image pointerImage = ObjectManageScript.instance.PointerImage;
+    //GameObject Player;
+    //GameObject MouseObject;
+    //Camera MainCamera;
+    //UnityEngine.UI.Image pointerImage;
 
     private Vector3 currentPosition = Vector3.zero;
 
@@ -52,15 +49,15 @@ public class ShotScript : MonoBehaviour
 
     void MousePositionInit()
     {
-        pointerImage.transform.position = Input.mousePosition;
-        Ray mouseRay = MainCamera.ScreenPointToRay(Input.mousePosition);
+        ObjectManageScript.instance.PointerImage.transform.position = Input.mousePosition;
+        Ray mouseRay = ObjectManageScript.instance.MainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit mouseHit;
         
         if (Physics.Raycast(mouseRay, out mouseHit, Mathf.Infinity, mouseLayerMask))
         {
             //Rayを飛ばしてマウスの位置を3D空間に変換
             currentPosition = mouseHit.point;
-            MouseObject.transform.position = currentPosition;
+            ObjectManageScript.instance.MouseObject.transform.position = currentPosition;
             //Vector3 mouseObjPos = player.transform.position + Vector3.ClampMagnitude(mouseHit.point - player.transform.position, 7);
             //mouseObject.transform.position = new Vector3(mouseObjPos.x, mouseHit.point.y, mouseObjPos.z);
             //Debug.DrawRay(mouseRay.origin, mouseHit.point - mouseRay.origin, Color.green, 5, false);
@@ -76,7 +73,7 @@ public class ShotScript : MonoBehaviour
         }
 
         //Playerの位置から、マウスの指定した場所までRayを飛ばす
-        Vector3 shotOrigin = new Vector3(Player.transform.position.x, MouseObject.transform.position.y, Player.transform.position.z);
+        Vector3 shotOrigin = new Vector3(ObjectManageScript.instance.Player.transform.position.x, ObjectManageScript.instance.MouseObject.transform.position.y, ObjectManageScript.instance.Player.transform.position.z);
         Vector3 shotDirection = currentPosition - shotOrigin;
         if (Physics.Raycast(shotOrigin, shotDirection, out shotHit, shotDistance))
         {

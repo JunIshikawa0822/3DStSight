@@ -2,30 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ObjectManageScript : MonoBehaviour
 {
+    //private static ObjectManageScript instance;
     public static ObjectManageScript instance;
 
     public GameObject Player;
-
     public GameObject MouseObject;
-
-    public UnityEngine.UI.Image PointerImage;
-
+    public Image PointerImage;
     public Camera MainCamera;
 
     public List<CinemachineVirtualCamera> CameraList = new List<CinemachineVirtualCamera>();
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

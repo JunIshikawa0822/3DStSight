@@ -8,15 +8,16 @@ using Cinemachine;
 public class CamerMoveScript : MonoBehaviour
 {
     // Start is called before the first frame update
-    GameObject Player = ObjectManageScript.instance.Player;
-
-    List<CinemachineVirtualCamera> CameraList = ObjectManageScript.instance.CameraList;
-
-    GameObject MouseObject = ObjectManageScript.instance.MouseObject;
+    GameObject Player;
+    List<CinemachineVirtualCamera> CameraList;
+    GameObject MouseObject;
 
     // Start is called before the first frame update
     void Start()
     {
+        Player = ObjectManageScript.instance.Player;
+        CameraList = ObjectManageScript.instance.CameraList;
+        MouseObject = ObjectManageScript.instance.MouseObject;
         PrioritySet(0);
     }
 
