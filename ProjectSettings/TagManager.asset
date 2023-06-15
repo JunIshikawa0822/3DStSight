@@ -15,8 +15,8 @@ TagManager:
   - UI
   - MouseGetLayer
   - PlayerLayer
-  - 
-  - 
+  - EnemyLayer
+  - WallLayer
   - 
   - 
   - 
