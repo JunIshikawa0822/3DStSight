@@ -30,7 +30,7 @@ public class FieldOfView : MonoBehaviour
         //var filter = GetComponentInChildren<MeshFilter>();
         //filter.sharedMesh = viewMesh;
 
-        StartCoroutine("FindTargetsWithDelay", .2f);
+        StartCoroutine("FindTargetsWithDelay", 0.2f);
     }
 
 
@@ -45,7 +45,7 @@ public class FieldOfView : MonoBehaviour
 
     private void Update()
     {
-        transform.LookAt(ObjectManageScript.instance.MouseObject.transform.position + Vector3.up * transform.position.y);
+
     }
 
     void LateUpdate()
@@ -64,6 +64,7 @@ public class FieldOfView : MonoBehaviour
         {
             //敵のtransform
             Transform target = targetsInViewRadius[i].transform;
+            MeshRenderer enemyMeshRenderer = target.GetComponent<MeshRenderer>();
 
             //敵の方向のベクトル（正規化）
             Vector3 dirToTarget = (target.position - transform.position).normalized;
@@ -78,8 +79,17 @@ public class FieldOfView : MonoBehaviour
                 if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
                 {
                     //targetはvisible
+                    enemyMeshRenderer.enabled = true;
                     visibleTargets.Add(target);
                 }
+                else
+                {
+                    enemyMeshRenderer.enabled = false;
+                }
+            }
+            else
+            {
+                enemyMeshRenderer.enabled = false;
             }
         }
     }

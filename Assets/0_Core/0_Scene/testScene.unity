@@ -354,7 +354,7 @@ GameObject:
   - component: {fileID: 912496895}
   - component: {fileID: 912496897}
   m_Layer: 7
-  m_Name: Player
+  m_Name: FOVObj
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -475,8 +475,8 @@ MonoBehaviour:
     m_Bits: 512
   visibleTargets: []
   meshResolution: 1
-  edgeResolveIterations: 0
-  edgeDstThreshold: 0
+  edgeResolveIterations: 4
+  edgeDstThreshold: 0.5
   viewMeshFilter: {fileID: 1905803100}
 --- !u!54 &912496897
 Rigidbody:

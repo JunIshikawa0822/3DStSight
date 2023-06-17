@@ -13,7 +13,8 @@ public class ObjectManageScript : MonoBehaviour
     public GameObject MouseObject;
     public Image PointerImage;
     public Camera MainCamera;
-    public GameObject RangeObject;
+    //public GameObject RangeObject;
+    public GameObject FoVObject;
 
     public List<CinemachineVirtualCamera> CameraList = new List<CinemachineVirtualCamera>();
 
