@@ -4,9 +4,13 @@ using System.Collections.Generic;
 
 public class FieldOfView : MonoBehaviour
 {
-    public float viewRadius;
+    public float viewRadius1;
     [Range(0, 360)]
-    public float viewAngle;
+    public float viewAngle1;
+
+    public float roundViewRadius1;
+    float roundViewAngle1 = 360;
+    
 
     public LayerMask targetMask;
     public LayerMask obstacleMask;
@@ -21,11 +25,16 @@ public class FieldOfView : MonoBehaviour
     public MeshFilter viewMeshFilter;
     Mesh viewMesh;
 
+    public MeshFilter viewRoundMeshFilter;
+    Mesh viewRoundMesh;
+
     void Start()
     {
         viewMesh = new Mesh();
+        viewRoundMesh = new Mesh();
         //viewMesh.name = "View Mesh";
         viewMeshFilter.sharedMesh = viewMesh;
+        viewRoundMeshFilter.sharedMesh = viewRoundMesh;
 
         //var filter = GetComponentInChildren<MeshFilter>();
         //filter.sharedMesh = viewMesh;
@@ -39,7 +48,7 @@ public class FieldOfView : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(delay);
-            FindVisibleTargets();
+            FindVisibleTargets(viewAngle1, viewRadius1, roundViewRadius1);
         }
     }
 
@@ -50,15 +59,17 @@ public class FieldOfView : MonoBehaviour
 
     void LateUpdate()
     {
-        DrawFieldOfView();
+        DrawFieldOfView(viewAngle1, viewRadius1, viewMesh);
+        DrawFieldOfView(roundViewAngle1, roundViewRadius1, viewRoundMesh);
     }
 
-    void FindVisibleTargets()
+    void FindVisibleTargets(float viewAngle, float viewRadius, float roundViewRadius)
     {
         visibleTargets.Clear();
 
         //第一引数が中心座標、第二引数が球の半径、引数で指定した球が触れた敵を全て配列で返すメソッド
         Collider[] targetsInViewRadius = Physics.OverlapSphere(transform.position, viewRadius, targetMask);
+        Collider[] targetsInRoundViewRadius = Physics.OverlapSphere(transform.position, roundViewRadius, targetMask);
 
         for (int i = 0; i < targetsInViewRadius.Length; i++)
         {
@@ -91,10 +102,47 @@ public class FieldOfView : MonoBehaviour
             {
                 enemyMeshRenderer.enabled = false;
             }
+
+
+        }
+
+        for (int i = 0; i < targetsInRoundViewRadius.Length; i++)
+        {
+            //敵のtransform
+            Transform target = targetsInRoundViewRadius[i].transform;
+            MeshRenderer enemyMeshRenderer = target.GetComponent<MeshRenderer>();
+
+            //敵の方向のベクトル（正規化）
+            Vector3 dirToTarget = (target.position - transform.position).normalized;
+
+            ////敵の方向がviewAngle内だったら
+            //if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
+            //{
+                //敵のdistance
+                float dstToTarget = Vector3.Distance(transform.position, target.position);
+
+                //敵までのrayを飛ばして間に障害物がなければ
+                if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
+                {
+                    //targetはvisible
+                    enemyMeshRenderer.enabled = true;
+                    visibleTargets.Add(target);
+                }
+                else
+                {
+                    enemyMeshRenderer.enabled = false;
+                }
+            //}
+            //else
+            //{
+            //    enemyMeshRenderer.enabled = false;
+            //}
+
+
         }
     }
 
-    void DrawFieldOfView()
+    void DrawFieldOfView(float viewAngle, float viewRadius, Mesh mesh)
     {
         int stepCount = Mathf.RoundToInt(viewAngle * meshResolution);
         float stepAngleSize = viewAngle / stepCount;
@@ -105,14 +153,14 @@ public class FieldOfView : MonoBehaviour
         for (int i = 0; i <= stepCount; i++)
         {
             float angle = transform.eulerAngles.y - viewAngle / 2 + stepAngleSize * i;
-            ViewCastInfo newViewCast = ViewCast(angle);
+            ViewCastInfo newViewCast = ViewCast(angle, viewRadius);
 
             if (i > 0)
             {
                 bool edgeDstThresholdExceeded = Mathf.Abs(oldViewCast.dst - newViewCast.dst) > edgeDstThreshold;
                 if (oldViewCast.hit != newViewCast.hit || (oldViewCast.hit && newViewCast.hit && edgeDstThresholdExceeded))
                 {
-                    EdgeInfo edge = FindEdge(oldViewCast, newViewCast);
+                    EdgeInfo edge = FindEdge(oldViewCast, newViewCast, viewRadius);
                     if (edge.pointA != Vector3.zero)
                     {
                         viewPoints.Add(edge.pointA);
@@ -146,15 +194,15 @@ public class FieldOfView : MonoBehaviour
             }
         }
 
-        viewMesh.Clear();
+        mesh.Clear();
 
-        viewMesh.vertices = vertices;
-        viewMesh.triangles = triangles;
-        viewMesh.RecalculateNormals();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
     }
 
 
-    EdgeInfo FindEdge(ViewCastInfo minViewCast, ViewCastInfo maxViewCast)
+    EdgeInfo FindEdge(ViewCastInfo minViewCast, ViewCastInfo maxViewCast, float radius)
     {
         float minAngle = minViewCast.angle;
         float maxAngle = maxViewCast.angle;
@@ -164,7 +212,7 @@ public class FieldOfView : MonoBehaviour
         for (int i = 0; i < edgeResolveIterations; i++)
         {
             float angle = (minAngle + maxAngle) / 2;
-            ViewCastInfo newViewCast = ViewCast(angle);
+            ViewCastInfo newViewCast = ViewCast(angle, radius);
 
             bool edgeDstThresholdExceeded = Mathf.Abs(minViewCast.dst - newViewCast.dst) > edgeDstThreshold;
             if (newViewCast.hit == minViewCast.hit && !edgeDstThresholdExceeded)
@@ -183,7 +231,7 @@ public class FieldOfView : MonoBehaviour
     }
 
 
-    ViewCastInfo ViewCast(float globalAngle)
+    ViewCastInfo ViewCast(float globalAngle, float viewRadius)
     {
         Vector3 dir = DirFromAngle(globalAngle, true);
         RaycastHit hit;
