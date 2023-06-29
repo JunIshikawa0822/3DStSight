@@ -18,13 +18,13 @@ public class CamerMoveScript : MonoBehaviour
         Player = ObjectManageScript.instance.Player;
         CameraList = ObjectManageScript.instance.CameraList;
         MouseObject = ObjectManageScript.instance.MouseObject;
-        PrioritySet(0);
-    }
+        PrioritySet(1);
 
+    }
     // Update is called once per frame
     void Update()
     {
-        WhichCamera();
+        //WhichCamera();
     }
 
     //void ShotCamera()

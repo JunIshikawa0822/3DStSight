@@ -125,7 +125,6 @@ public class FieldOfView : MonoBehaviour
 
             }
 
-
             viewPoints.Add(newViewCast.point);
             oldViewCast = newViewCast;
         }

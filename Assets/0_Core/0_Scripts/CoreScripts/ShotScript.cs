@@ -23,7 +23,7 @@ public class ShotScript : MonoBehaviour
 
     float shotDistance = 100f;
 
-    int mouseLayerMask = 1 << 6;
+    public int rayHitLayer  = 1 << 6 | 1 << 8 | 1 << 9 ;
 
     // Start is called before the first frame update
     void Start()
@@ -36,15 +36,12 @@ public class ShotScript : MonoBehaviour
     void Update()
     {
         //UnityEngine.Cursor.visible = false;
-        MousePositionInit();
+        MousePositionInit();   
         
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(0))
         {
-            if (Input.GetMouseButton(0))
-            {
-                Fire();
-            }
-        }
+            Fire();
+        }       
     }
 
     void MousePositionInit()
@@ -53,7 +50,7 @@ public class ShotScript : MonoBehaviour
         Ray mouseRay = ObjectManageScript.instance.MainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit mouseHit;
         
-        if (Physics.Raycast(mouseRay, out mouseHit, Mathf.Infinity, mouseLayerMask))
+        if (Physics.Raycast(mouseRay, out mouseHit, Mathf.Infinity, rayHitLayer))
         {
             //Rayを飛ばしてマウスの位置を3D空間に変換
             currentPosition = mouseHit.point;
@@ -78,7 +75,7 @@ public class ShotScript : MonoBehaviour
         if (Physics.Raycast(shotOrigin, shotDirection, out shotHit, shotDistance))
         {
             //Rayがオブジェクトに当たった場合
-            BulletHit();
+            BulletHit(shotHit);
             Debug.DrawRay(shotOrigin, shotDirection, Color.red, 5, true);
             //Debug.Log("HIT!!!!!!");
         }
@@ -93,9 +90,9 @@ public class ShotScript : MonoBehaviour
     }
 
     //当たった場合に呼び出す関数
-    void BulletHit()
+    void BulletHit(RaycastHit hit)
     {
-        //Debug.Log(shotHit.collider.gameObject.name);
+        Debug.Log(hit.collider.gameObject.name);
     }
 
     //非同期処理　弾の発射される時間感覚を制御
