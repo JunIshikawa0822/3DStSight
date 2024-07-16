@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class FieldOfView : MonoBehaviour
 {
@@ -8,16 +9,19 @@ public class FieldOfView : MonoBehaviour
     [Range(0, 360)]
     public float viewAngle1;
 
+    public SphereCollider spColl;
+
     public float roundViewRadius1;
     float roundViewAngle1 = 360;
-    
 
     public LayerMask targetMask;
     public LayerMask obstacleMask;
 
+    //見えているターゲットを保存するリスト
     [HideInInspector]
     public List<Transform> visibleTargets = new List<Transform>();
 
+    //解像度
     public float meshResolution;
     public int edgeResolveIterations;
     public float edgeDstThreshold;
@@ -30,25 +34,34 @@ public class FieldOfView : MonoBehaviour
 
     void Start()
     {
+        //Meshを用意
         viewMesh = new Mesh();
+        //Meshを用意
         viewRoundMesh = new Mesh();
+
+        //名前をつけて識別しやすくする
         //viewMesh.name = "View Mesh";
+
+        //sharedMeshは設定しなくてもよい　設定すると同じMeshを持つもの同士でMeshを共有し、メモリデータを削減できる
         viewMeshFilter.sharedMesh = viewMesh;
         viewRoundMeshFilter.sharedMesh = viewRoundMesh;
 
-        //var filter = GetComponentInChildren<MeshFilter>();
+        //MeshFilter filter = GetComponentInChildren<MeshFilter>();
         //filter.sharedMesh = viewMesh;
 
+        //敵にOnTriggerExitを発火させ、meshRendererのオンオフをさせるためのCollider　結構力技なので心苦しい
+        spColl.radius = viewRadius1;
         StartCoroutine("FindTargetsWithDelay", 0.2f);
     }
 
-
+    //メインスレッドで作業しないことで他の処理がスムーズ
     IEnumerator FindTargetsWithDelay(float delay)
     {
         while (true)
         {
             yield return new WaitForSeconds(delay);
-            FindVisibleTargets(viewAngle1, viewRadius1, roundViewRadius1);
+            //0.2f後にFindVisibleTargetsを発火する なんでコルーチン内でこれやってるかは謎
+            FindVisibleTargets(viewAngle1, roundViewAngle1, viewRadius1, roundViewRadius1);
         }
     }
 
@@ -63,103 +76,98 @@ public class FieldOfView : MonoBehaviour
         DrawFieldOfView(roundViewAngle1, roundViewRadius1, viewRoundMesh);
     }
 
-    void FindVisibleTargets(float viewAngle, float viewRadius, float roundViewRadius)
+    void FindVisibleTargets(float viewAngle, float roundViewAngle, float viewRadius, float roundViewRadius)
     {
         visibleTargets.Clear();
 
-        //第一引数が中心座標、第二引数が球の半径、引数で指定した球が触れた敵を全て配列で返すメソッド
+        //第一引数が中心座標、第二引数が球の半径、引数で指定した球が触れた敵を全て配列で返す
+        //でかいほう
         Collider[] targetsInViewRadius = Physics.OverlapSphere(transform.position, viewRadius, targetMask);
+
+        //ちいさいほう
         Collider[] targetsInRoundViewRadius = Physics.OverlapSphere(transform.position, roundViewRadius, targetMask);
 
-        for (int i = 0; i < targetsInViewRadius.Length; i++)
+        //でかいほう
+        Calc(targetsInViewRadius, viewAngle);
+        //ちいさいほう
+        Calc(targetsInRoundViewRadius, roundViewAngle);
+        
+        void Calc(Collider[] targetsInRadiusArray, float angle)
         {
-            //敵のtransform
-            Transform target = targetsInViewRadius[i].transform;
-            MeshRenderer enemyMeshRenderer = target.GetComponent<MeshRenderer>();
-
-            //敵の方向のベクトル（正規化）
-            Vector3 dirToTarget = (target.position - transform.position).normalized;
-
-            //敵の方向がviewAngle内だったら
-            if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
+            for (int i = 0; i < targetsInRadiusArray.Length; i++)
             {
-                //敵のdistance
-                float dstToTarget = Vector3.Distance(transform.position, target.position);
+                //敵のtransform
+                Transform target = targetsInRadiusArray[i].transform;
+                MeshRenderer enemyMeshRenderer = target.GetComponent<MeshRenderer>();
 
-                //敵までのrayを飛ばして間に障害物がなければ
-                if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
+                //敵の方向のベクトル（正規化）
+                Vector3 dirToTarget = (target.position - transform.position).normalized;
+
+                //敵の方向がviewAngle内だったら
+                if (Vector3.Angle(transform.forward, dirToTarget) < angle / 2)
                 {
-                    //targetはvisible
-                    enemyMeshRenderer.enabled = true;
-                    visibleTargets.Add(target);
+                    //敵のdistance
+                    float dstToTarget = Vector3.Distance(transform.position, target.position);
+
+                    //敵までのrayを飛ばして間に障害物がなければ
+                    if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
+                    {
+                        //targetはvisible
+                        enemyMeshRenderer.enabled = true;
+                        visibleTargets.Add(target);
+                    }
+                    else
+                    {
+                        enemyMeshRenderer.enabled = false;
+                    }
                 }
                 else
                 {
                     enemyMeshRenderer.enabled = false;
                 }
             }
-            else
-            {
-                enemyMeshRenderer.enabled = false;
-            }
-
-
-        }
-
-        for (int i = 0; i < targetsInRoundViewRadius.Length; i++)
-        {
-            //敵のtransform
-            Transform target = targetsInRoundViewRadius[i].transform;
-            MeshRenderer enemyMeshRenderer = target.GetComponent<MeshRenderer>();
-
-            //敵の方向のベクトル（正規化）
-            Vector3 dirToTarget = (target.position - transform.position).normalized;
-
-            ////敵の方向がviewAngle内だったら
-            //if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
-            //{
-                //敵のdistance
-                float dstToTarget = Vector3.Distance(transform.position, target.position);
-
-                //敵までのrayを飛ばして間に障害物がなければ
-                if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
-                {
-                    //targetはvisible
-                    enemyMeshRenderer.enabled = true;
-                    visibleTargets.Add(target);
-                }
-                else
-                {
-                    enemyMeshRenderer.enabled = false;
-                }
-            //}
-            //else
-            //{
-            //    enemyMeshRenderer.enabled = false;
-            //}
-
-
         }
     }
 
     void DrawFieldOfView(float viewAngle, float viewRadius, Mesh mesh)
     {
+        //stepCount = 角度に解像度を掛けたもの
         int stepCount = Mathf.RoundToInt(viewAngle * meshResolution);
+
+        //stepCountを角度で割る = 1°をどれぐらいの密度で描画するか
         float stepAngleSize = viewAngle / stepCount;
 
         List<Vector3> viewPoints = new List<Vector3>();
         ViewCastInfo oldViewCast = new ViewCastInfo();
-
+        Debug.Log("OldViewCast = hit : " + oldViewCast.hit + ", point : " + oldViewCast.point + ", dst : " + oldViewCast.dst + ", angle : " + oldViewCast.angle);
+        Debug.Log(oldViewCast.dst);
+        //度数の分だけ行われる
         for (int i = 0; i <= stepCount; i++)
         {
             float angle = transform.eulerAngles.y - viewAngle / 2 + stepAngleSize * i;
+
+            //角度に対してRayを飛ばし、障害物を考慮した各頂点の値を格納する
             ViewCastInfo newViewCast = ViewCast(angle, viewRadius);
+            Debug.Log("NewViewCast = hit : " + newViewCast.hit + ", point : " + newViewCast.point + ", dst : " + newViewCast.dst + ", angle : " + newViewCast.angle);
 
             if (i > 0)
             {
+                //隣の度数線における距離から現在の度数線における距離を引いた値が閾値より大きい＝隣の度数線における距離よりも現在の距離が短い＝衝突
                 bool edgeDstThresholdExceeded = Mathf.Abs(oldViewCast.dst - newViewCast.dst) > edgeDstThreshold;
+                Debug.Log(oldViewCast.dst);
+                Debug.Log(Mathf.Abs(oldViewCast.dst - newViewCast.dst) + " : " + oldViewCast.dst + " , " + newViewCast.dst);
+                Debug.Log(newViewCast.angle + " : " + edgeDstThresholdExceeded);
+
+                //隣の度数におけるhitと現在のhitが異なる＝衝突の差
+                //両方ぶつかっているが、その距離に差がある＝衝突の差
                 if (oldViewCast.hit != newViewCast.hit || (oldViewCast.hit && newViewCast.hit && edgeDstThresholdExceeded))
                 {
+                    Debug.Log("突破");
+                    Debug.Log(oldViewCast.hit + ", " + newViewCast.hit);
+                    Debug.Log("前者 : " + (oldViewCast.hit != newViewCast.hit));
+                    Debug.Log("後者 : " + ((oldViewCast.hit && newViewCast.hit && edgeDstThresholdExceeded)));
+
+                    //中間を取得、補完
                     EdgeInfo edge = FindEdge(oldViewCast, newViewCast, viewRadius);
                     if (edge.pointA != Vector3.zero)
                     {
@@ -170,15 +178,19 @@ public class FieldOfView : MonoBehaviour
                         viewPoints.Add(edge.pointB);
                     }
                 }
-
             }
 
             viewPoints.Add(newViewCast.point);
             oldViewCast = newViewCast;
         }
 
+        Debug.Log(string.Join("," , viewPoints));
+
+        //扇の先＋原点
         int vertexCount = viewPoints.Count + 1;
+        //頂点メッシュ
         Vector3[] vertices = new Vector3[vertexCount];
+        //triangles 配列はメッシュの三角形を定義します。三角形の数は (vertexCount - 2) で、各三角形は3つの頂点を持ちます。
         int[] triangles = new int[(vertexCount - 2) * 3];
 
         vertices[0] = Vector3.zero;
@@ -211,26 +223,35 @@ public class FieldOfView : MonoBehaviour
 
         for (int i = 0; i < edgeResolveIterations; i++)
         {
+            //前と後の角度の中間の角度取得
             float angle = (minAngle + maxAngle) / 2;
+
+            //その角度でRayを飛ばして情報を取得
             ViewCastInfo newViewCast = ViewCast(angle, radius);
 
+            //oldViewCastのAngleと中間角度におけるdstの差分を確認
             bool edgeDstThresholdExceeded = Mathf.Abs(minViewCast.dst - newViewCast.dst) > edgeDstThreshold;
+
+            //差がない
             if (newViewCast.hit == minViewCast.hit && !edgeDstThresholdExceeded)
             {
                 minAngle = angle;
                 minPoint = newViewCast.point;
+                //差がない場合は(newViewCast.point, Vector3.zero)
             }
+            //差がある
             else
             {
                 maxAngle = angle;
                 maxPoint = newViewCast.point;
+                //差がある場合は(Vector3.zero, newViewCast.point)
             }
         }
 
         return new EdgeInfo(minPoint, maxPoint);
     }
 
-
+    //Rayを飛ばして、当たればその位置を、当たらなければ距離と半径に従って位置を返す
     ViewCastInfo ViewCast(float globalAngle, float viewRadius)
     {
         Vector3 dir = DirFromAngle(globalAngle, true);
@@ -252,6 +273,7 @@ public class FieldOfView : MonoBehaviour
         {
             angleInDegrees += transform.eulerAngles.y;
         }
+
         return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
     }
 

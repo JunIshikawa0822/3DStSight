@@ -6,6 +6,7 @@ TagManager:
   tags:
   - floor
   - Enemy
+  - View
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - PlayerLayer
   - EnemyLayer
   - WallLayer
-  - 
+  - ViewLayer
   - 
   - 
   - 
