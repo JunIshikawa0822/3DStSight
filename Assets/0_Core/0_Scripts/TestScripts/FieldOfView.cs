@@ -19,7 +19,10 @@ public class FieldOfView : MonoBehaviour
 
     //見えているターゲットを保存するリスト
     [HideInInspector]
-    public List<Transform> visibleTargets = new List<Transform>();
+    public List<Transform> newVisibleTargets = new List<Transform>();
+
+    [HideInInspector]
+    private List<Transform> oldVisibleTargets = new List<Transform>();
 
     //解像度
     public float meshResolution;
@@ -59,9 +62,22 @@ public class FieldOfView : MonoBehaviour
     {
         while (true)
         {
+            //Debug.Log("は？oldCount : " + oldVisibleTargets.Count);
+            //Debug.Log("は？？？" + string.Join(",", oldVisibleTargets));
+            newVisibleTargets = FindVisibleTargets(viewAngle1, roundViewAngle1, viewRadius1, roundViewRadius1);
+            //Debug.Log("更新後newCount : " + newVisibleTargets.Count);
+            //Debug.Log("更新後oldCount : " + oldVisibleTargets.Count);
+            //Debug.Log("更新しないでほしい" + string.Join(",", oldVisibleTargets));
+
+            //newVisibleTargetを描画
+            DisplayVisibleTargets(newVisibleTargets);
+
+            UnDisplayInvisibleTargets(newVisibleTargets, oldVisibleTargets);
+
+            oldVisibleTargets = newVisibleTargets;
+            //Debug.Log("更新前newCount : " + newVisibleTargets.Count);
+            //Debug.Log("更新前oldCount : " + oldVisibleTargets.Count);
             yield return new WaitForSeconds(delay);
-            //0.2f後にFindVisibleTargetsを発火する なんでコルーチン内でこれやってるかは謎
-            FindVisibleTargets(viewAngle1, roundViewAngle1, viewRadius1, roundViewRadius1);
         }
     }
 
@@ -76,9 +92,42 @@ public class FieldOfView : MonoBehaviour
         DrawFieldOfView(roundViewAngle1, roundViewRadius1, viewRoundMesh);
     }
 
-    void FindVisibleTargets(float viewAngle, float roundViewAngle, float viewRadius, float roundViewRadius)
+    void DisplayVisibleTargets(List<Transform> newVisibleTargets)
     {
-        visibleTargets.Clear();
+        foreach(Transform target in newVisibleTargets)
+        {
+            target.GetComponent<MeshRenderer>().enabled = true;
+        }
+    }
+
+    void UnDisplayInvisibleTargets(List<Transform> newVisibleTargets, List<Transform> oldVisibleTargets)
+    {
+        foreach (Transform oldTarget in oldVisibleTargets)
+        {
+            bool isInclude = false;
+
+            foreach (Transform newTarget in newVisibleTargets)
+            {
+                //newにoldが含まれていればok
+                if (oldTarget == newTarget)
+                {
+                    isInclude = true;
+                    break;
+                }
+            }
+
+            //含まれていないならオフ
+            if (isInclude == false)
+            {
+                oldTarget.GetComponent<MeshRenderer>().enabled = false;
+            }
+        }
+    }
+
+    List<Transform> FindVisibleTargets(float viewAngle, float roundViewAngle, float viewRadius, float roundViewRadius)
+    {
+        //newVisibleTargets.Clear();
+        List<Transform> newVisibleTargets = new List<Transform>();
 
         //第一引数が中心座標、第二引数が球の半径、引数で指定した球が触れた敵を全て配列で返す
         //でかいほう
@@ -91,6 +140,8 @@ public class FieldOfView : MonoBehaviour
         Calc(targetsInViewRadius, viewAngle);
         //ちいさいほう
         Calc(targetsInRoundViewRadius, roundViewAngle);
+
+        return newVisibleTargets;
         
         void Calc(Collider[] targetsInRadiusArray, float angle)
         {
@@ -98,7 +149,7 @@ public class FieldOfView : MonoBehaviour
             {
                 //敵のtransform
                 Transform target = targetsInRadiusArray[i].transform;
-                MeshRenderer enemyMeshRenderer = target.GetComponent<MeshRenderer>();
+                //MeshRenderer enemyMeshRenderer = target.GetComponent<MeshRenderer>();
 
                 //敵の方向のベクトル（正規化）
                 Vector3 dirToTarget = (target.position - transform.position).normalized;
@@ -113,17 +164,9 @@ public class FieldOfView : MonoBehaviour
                     if (!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
                     {
                         //targetはvisible
-                        enemyMeshRenderer.enabled = true;
-                        visibleTargets.Add(target);
+                        //enemyMeshRenderer.enabled = true;
+                        newVisibleTargets.Add(target);
                     }
-                    else
-                    {
-                        enemyMeshRenderer.enabled = false;
-                    }
-                }
-                else
-                {
-                    enemyMeshRenderer.enabled = false;
                 }
             }
         }
@@ -139,8 +182,8 @@ public class FieldOfView : MonoBehaviour
 
         List<Vector3> viewPoints = new List<Vector3>();
         ViewCastInfo oldViewCast = new ViewCastInfo();
-        Debug.Log("OldViewCast = hit : " + oldViewCast.hit + ", point : " + oldViewCast.point + ", dst : " + oldViewCast.dst + ", angle : " + oldViewCast.angle);
-        Debug.Log(oldViewCast.dst);
+        //Debug.Log("OldViewCast = hit : " + oldViewCast.hit + ", point : " + oldViewCast.point + ", dst : " + oldViewCast.dst + ", angle : " + oldViewCast.angle);
+        //Debug.Log(oldViewCast.dst);
         //度数の分だけ行われる
         for (int i = 0; i <= stepCount; i++)
         {
@@ -148,24 +191,24 @@ public class FieldOfView : MonoBehaviour
 
             //角度に対してRayを飛ばし、障害物を考慮した各頂点の値を格納する
             ViewCastInfo newViewCast = ViewCast(angle, viewRadius);
-            Debug.Log("NewViewCast = hit : " + newViewCast.hit + ", point : " + newViewCast.point + ", dst : " + newViewCast.dst + ", angle : " + newViewCast.angle);
+            //Debug.Log("NewViewCast = hit : " + newViewCast.hit + ", point : " + newViewCast.point + ", dst : " + newViewCast.dst + ", angle : " + newViewCast.angle);
 
             if (i > 0)
             {
                 //隣の度数線における距離から現在の度数線における距離を引いた値が閾値より大きい＝隣の度数線における距離よりも現在の距離が短い＝衝突
                 bool edgeDstThresholdExceeded = Mathf.Abs(oldViewCast.dst - newViewCast.dst) > edgeDstThreshold;
-                Debug.Log(oldViewCast.dst);
-                Debug.Log(Mathf.Abs(oldViewCast.dst - newViewCast.dst) + " : " + oldViewCast.dst + " , " + newViewCast.dst);
-                Debug.Log(newViewCast.angle + " : " + edgeDstThresholdExceeded);
+                //Debug.Log(oldViewCast.dst);
+                //Debug.Log(Mathf.Abs(oldViewCast.dst - newViewCast.dst) + " : " + oldViewCast.dst + " , " + newViewCast.dst);
+                //Debug.Log(newViewCast.angle + " : " + edgeDstThresholdExceeded);
 
                 //隣の度数におけるhitと現在のhitが異なる＝衝突の差
                 //両方ぶつかっているが、その距離に差がある＝衝突の差
                 if (oldViewCast.hit != newViewCast.hit || (oldViewCast.hit && newViewCast.hit && edgeDstThresholdExceeded))
                 {
-                    Debug.Log("突破");
-                    Debug.Log(oldViewCast.hit + ", " + newViewCast.hit);
-                    Debug.Log("前者 : " + (oldViewCast.hit != newViewCast.hit));
-                    Debug.Log("後者 : " + ((oldViewCast.hit && newViewCast.hit && edgeDstThresholdExceeded)));
+                    //Debug.Log("突破");
+                    //Debug.Log(oldViewCast.hit + ", " + newViewCast.hit);
+                    //Debug.Log("前者 : " + (oldViewCast.hit != newViewCast.hit));
+                    //Debug.Log("後者 : " + ((oldViewCast.hit && newViewCast.hit && edgeDstThresholdExceeded)));
 
                     //中間を取得、補完
                     EdgeInfo edge = FindEdge(oldViewCast, newViewCast, viewRadius);
@@ -184,7 +227,7 @@ public class FieldOfView : MonoBehaviour
             oldViewCast = newViewCast;
         }
 
-        Debug.Log(string.Join("," , viewPoints));
+        //Debug.Log(string.Join("," , viewPoints));
 
         //扇の先＋原点
         int vertexCount = viewPoints.Count + 1;
